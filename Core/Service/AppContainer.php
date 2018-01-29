@@ -5,6 +5,8 @@ use Core\Form\AppFormValidator;
 use Core\Form\AppCaptcha;
 use Core\Form\AppMailer;
 // Import PHPMailer component
+use Core\Routing\AppRoute;
+use Core\Routing\AppRouter;
 use PHPMailer\PHPMailer\PHPMailer;
 // Import Google recaptcha component
 use ReCaptcha\ReCaptcha;
@@ -118,4 +120,14 @@ class AppContainer
 		}
 		return $mailers;
 	}
+
+	public function getRouter()
+    {
+        return new AppRouter($_GET['url'], $this->getRouteFactory());
+    }
+
+    public function getRouteFactory()
+    {
+        return new RouteFactory();
+    }
 }

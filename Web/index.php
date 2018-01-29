@@ -16,4 +16,6 @@ if (!class_exists('Composer\\Autoload\\ClassLoader'))
 $container = AppContainer::getInstance();
 
 // Controller is called with a router.
-$router = new AppRouter($_GET['url']);
+#$router = new AppRouter($_GET['url']);
+
+new \Core\App();

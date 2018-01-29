@@ -3,6 +3,7 @@ namespace Core\Routing;
 use Core\AppPage;
 use Core\AppHTTPResponse;
 use Core\Config\AppConfig;
+use Core\Service\RouteFactory;
 
 /**
  * Create a router to:
@@ -42,13 +43,23 @@ class AppRouter
 	 * @var object: store unique AppConfig instance
 	 */
 	private $config;
+
+    /**
+     * @var AppRoute
+     */
+	private $route;
+
+    /**
+     * @var RouteFactory
+     */
+	private $routeFactory;
 	
 	/**
 	 * Constructor
 	 * @param string $url 
 	 * @return void
 	 */
-	public function __construct($url)
+	public function __construct($url, RouteFactory $routeFactory)
 	{
 		// Receive $_GET['url'] value
 		$this->url = $url;
@@ -60,15 +71,19 @@ class AppRouter
 		$this->router = $this;
 		// TODO: use DIC to instantiate AppConfig object!
 		$this->config = AppConfig::getInstance();
+
+		$this->routeFactory = $routeFactory;
+
+
 		// Get existing routes
-		$this->getRoutesConfig();
+		#$this->getRoutesConfig();
 	}
 
-	/**
-	 * Parse routes configuration, call routes creation and call routes checking
-	 * @return void
-	 */
-	private function getRoutesConfig()
+    /**
+     * Parse routes configuration, call routes creation and call routes checking
+     * @return AppRouter
+     */
+	public function initRoutes()
 	{
 		// Get routes from yaml file
 		$yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
@@ -79,7 +94,7 @@ class AppRouter
     		$method = $route['method'];
     		$this->createRoute($path, $name, $method);
     	}
-    	$this->checkRoutes();
+    	return $this;
 	}
 
 	/**
@@ -91,8 +106,7 @@ class AppRouter
 	 */
 	private function createRoute($path, $name = null, $method)
 	{
-		// TODO: use DIC to instantiate AppRoute object!
-		$route = new AppRoute($path, $name);
+		$route = $this->routeFactory->getRoute($path, $name);
 		$this->routes[$method][] = $route;
 		$this->namedRoutes[$name] = $route;
 	}
@@ -102,7 +116,7 @@ class AppRouter
 	 * @throws RoutingException
 	 * @return callable: method to call a controller action or 404 error response
 	 */
-	private function checkRoutes()
+	public function checkRoutes()
 	{
 		try {
 			if(isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
